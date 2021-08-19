@@ -1,4 +1,4 @@
-const { List, Vector, Nil, String, QuoteSeq } = require('./types');
+const { List, Vector, Nil, String, HashMap } = require('./types');
 
 class Reader {
   constructor(tokens) {
@@ -77,6 +77,23 @@ const read_vector = (reader) => {
   return new Vector(ast);
 };
 
+const read_hash_map = (reader) => {
+  const ast = read_seq(reader, '}');
+  return new HashMap(ast);
+};
+
+const createQuotedList = (reader, token) => {
+  const quotes = {
+    "'": 'quote',
+    '~': 'unquote',
+    '~@': 'splice-unquote',
+    '`': 'quasiquote',
+    '@': 'deref',
+  };
+  reader.next();
+  return new List([quotes[token], read_form(reader)]);
+};
+
 const read_form = (reader) => {
   const token = reader.peek();
 
@@ -85,6 +102,14 @@ const read_form = (reader) => {
       return read_list(reader);
     case '[':
       return read_vector(reader);
+    case '{':
+      return read_hash_map(reader);
+    case "'":
+    case '~':
+    case '~@':
+    case '`':
+    case '@':
+      return createQuotedList(reader, token);
     default:
       return read_atom(reader);
   }

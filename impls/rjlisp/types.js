@@ -13,6 +13,17 @@ class List extends MalValue {
   }
 }
 
+class HashMap extends MalValue {
+  constructor(ast) {
+    super();
+    this.ast = ast;
+  }
+
+  prn_str() {
+    return '{' + this.ast.map(prn_str).join(' ') + '}';
+  }
+}
+
 class Vector extends MalValue {
   constructor(ast) {
     super();
@@ -53,4 +64,4 @@ const prn_str = (val) => {
   return val;
 };
 
-module.exports = { List, Vector, String, Nil, prn_str };
+module.exports = { List, Vector, String, Nil, prn_str, HashMap };
