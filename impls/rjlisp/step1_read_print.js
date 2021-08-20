@@ -9,9 +9,9 @@ const rl = readline.createInterface({
 
 const READ = (str) => read_str(str);
 const EVAL = (str) => str;
-const PRINT = (str) => prn_str(str);
+const PRINT = (str, print_readably) => prn_str(str, print_readably);
 
-const rep = (str) => PRINT(EVAL(READ(str)));
+const rep = (str) => PRINT(EVAL(READ(str)), true);
 
 const main = () => {
   rl.question('user> ', (str) => {

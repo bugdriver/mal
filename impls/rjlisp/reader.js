@@ -1,4 +1,12 @@
-const { List, Vector, Nil, String, HashMap } = require('./types');
+const {
+  List,
+  Vector,
+  Nil,
+  String,
+  HashMap,
+  Symbol,
+  Keyword,
+} = require('./types');
 
 class Reader {
   constructor(tokens) {
@@ -40,7 +48,15 @@ const read_atom = (reader) => {
     return parseFloat(token);
   }
   if (token.match(/^"(?:\\.|[^\\"])*"$/)) {
-    return new String(token.slice(1, -1));
+    const str = token
+      .slice(1, token.length - 1)
+      .replace(/\\(.)/g, function (_, c) {
+        return c === 'n' ? '\n' : c;
+      }); 
+    return new String(str);
+  }
+  if (token.startsWith('"')) {
+    throw 'unbalanced';
   }
   if (token === 'true') {
     return true;
@@ -48,10 +64,13 @@ const read_atom = (reader) => {
   if (token === 'false') {
     return false;
   }
+  if (token.startsWith(':')) {
+    return new Keyword(token.slice(1));
+  }
   if (token === 'nil') {
     return Nil;
   }
-  return token;
+  return new Symbol(token);
 };
 
 const read_seq = (reader, closingSymbol) => {
@@ -79,7 +98,17 @@ const read_vector = (reader) => {
 
 const read_hash_map = (reader) => {
   const ast = read_seq(reader, '}');
-  return new HashMap(ast);
+  const hashMap = new Map();
+  if (ast.length % 2 != 0) {
+    throw 'odd number of arguments';
+  }
+  for (let i = 0; i < ast.length; i += 2) {
+    if (!ast[i] instanceof String) {
+      throw 'hashmap key is not String';
+    }
+    hashMap.set(ast[i], ast[i + 1]);
+  }
+  return new HashMap(hashMap);
 };
 
 const createQuotedList = (reader, token) => {
