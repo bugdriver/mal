@@ -1,35 +1,24 @@
 const readline = require('readline');
 const { read_str } = require('./reader');
 const { prn_str } = require('./printer');
-const {
-  List,
-  Vector,
-  Nil,
-  String,
-  HashMap,
-  Symbol,
-  Keyword,
-} = require('./types');
+const { Env } = require('./env');
+const { List, Vector, HashMap, Symbol } = require('./types');
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const env = {
-  '+': (...args) => args.reduce((a, b) => a + b, 0),
-  '*': (...args) => args.reduce((a, b) => a * b, 1),
-  '-': (a, b) => a - b,
-  '/': (a, b) => a / b,
-  pi: Math.PI,
-};
+const env = new Env();
+env.set(new Symbol('+'), (...args) => args.reduce((a, b) => a + b, 0));
+env.set(new Symbol('*'), (...args) => args.reduce((a, b) => a * b, 1));
+env.set(new Symbol('-'), (a, b) => a - b);
+env.set(new Symbol('/'), (a, b) => a / b);
+env.set(new Symbol('pi'), Math.PI);
 
 const eval_ast = (ast, env) => {
   if (ast instanceof Symbol) {
-    if (!env[ast.symbol]) {
-      throw `${ast.symbol} Symbol not found`;
-    }
-    return env[ast.symbol];
+    return env.get(ast);
   }
   if (ast instanceof List) {
     const newList = ast.ast.map((e) => EVAL(e, env));
@@ -52,6 +41,7 @@ const eval_ast = (ast, env) => {
 };
 
 const READ = (str) => read_str(str);
+
 const EVAL = (ast, env) => {
   if (!(ast instanceof List)) {
     return eval_ast(ast, env);
@@ -59,14 +49,31 @@ const EVAL = (ast, env) => {
   if (ast.isEmpty()) {
     return ast;
   }
+  const [firstElement] = ast.ast;
+
+  if (firstElement.symbol === 'def!') {
+    if (ast.ast.length != 3) {
+      throw 'incorrect number of argument to def!';
+    }
+    return env.set(ast.ast[1], EVAL(ast.ast[2], env));
+  }
+
+  if (firstElement.symbol === 'let*') {
+    const newEnv = new Env(env);
+    const bindings = ast.ast[1].ast;
+    for (let i = 0; i < bindings.length; i += 2) {
+      newEnv.set(bindings[i], EVAL(bindings[i + 1], newEnv));
+    }
+    return EVAL(ast.ast[2], newEnv);
+  }
 
   const [fn, ...args] = eval_ast(ast, env).ast;
-
   if (!fn instanceof Function) {
     throw `${fn} is not a function`;
   }
   return fn.apply(null, args);
 };
+
 const PRINT = (str, print_readably) => prn_str(str, print_readably);
 
 const rep = (str) => PRINT(EVAL(READ(str), env), true);
