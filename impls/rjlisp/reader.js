@@ -30,7 +30,10 @@ class Reader {
 const tokenize = (str) => {
   const re =
     /[\s,]*(~@|[\[\]{}()'`~^@]|"(?:\\.|[^\\"])*"?|;.*|[^\s\[\]{}('"`,;)]*)/g;
-  return [...str.matchAll(re)].map((e) => e[1]).slice(0, -1);
+  return [...str.matchAll(re)]
+    .map((e) => e[1])
+    .slice(0, -1)
+    .filter((e) => !e.startsWith(';'));
 };
 
 const read_str = (str) => {
@@ -52,7 +55,7 @@ const read_atom = (reader) => {
       .slice(1, token.length - 1)
       .replace(/\\(.)/g, function (_, c) {
         return c === 'n' ? '\n' : c;
-      }); 
+      });
     return new String(str);
   }
   if (token.startsWith('"')) {

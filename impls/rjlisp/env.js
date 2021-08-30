@@ -33,6 +33,7 @@ class Env {
     }
     const env = this.find(key);
     if (!env) {
+      console.log(key);
       throw key.symbol + ' not found.';
     }
     return env.data.get(key.symbol);

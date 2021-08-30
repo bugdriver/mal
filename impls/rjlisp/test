@@ -1,0 +1,33 @@
+(def! fact
+  (fn* [x y]
+       (if (= x 0)
+         y
+         (fact (- x 1) (* x y)))))
+
+(def! fib
+  (fn* [n]                              ; non-negative number
+    (if (<= n 1)
+      n
+      (+ (fib (- n 1)) (fib (- n 2))))))
+
+(def! sumdown
+  (fn* [n]                              ; non-negative number
+    (if (= n 0)
+      0
+      (+ n (sumdown  (- n 1))))))
+
+(print (fib 1))
+(print (fib 2))
+(print (fib 3))
+(print (fib 4))
+(print (fib 5))
+(print (fib 6))
+(print (fib 7))
+
+(print (sumdown 1))
+(print (sumdown 2))
+(print (sumdown 3))
+(print (sumdown 4))
+(print (sumdown 5))
+(print (sumdown 6))
+(print (sumdown 7))

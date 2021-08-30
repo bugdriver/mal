@@ -97,6 +97,36 @@ class Keyword extends MalValue {
   }
 }
 
+class Fn extends MalValue {
+  constructor(ast, params, env, fn) {
+    super();
+    this.ast = ast;
+    this.params = params;
+    this.env = env;
+    this.fn = fn;
+  }
+
+  prn_str(print_readably = false) {
+    return '#<function>';
+  }
+}
+
+class Atom extends MalValue {
+  constructor(malValue) {
+    super();
+    this.malValue = malValue;
+  }
+  get() {
+    return this.malValue;
+  }
+  set(malValue) {
+    return (this.malValue = malValue);
+  }
+  prn_str(print_readably = false) {
+    return '(atom ' + prn_str(this.malValue, print_readably) + ')';
+  }
+}
+
 class NilValue extends MalValue {
   constructor() {
     super();
@@ -124,4 +154,6 @@ module.exports = {
   HashMap,
   Symbol,
   Keyword,
+  Fn,
+  Atom,
 };
