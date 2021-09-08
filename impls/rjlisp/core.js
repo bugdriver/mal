@@ -1,7 +1,19 @@
 const { Env } = require('./env');
-const { List, Symbol, String, Atom } = require('./types');
+const { List, Symbol, String, Atom, Vector, MalValue } = require('./types');
 const { read_str } = require('./reader');
 const { readFileSync } = require('fs');
+
+const cons = (element, list) => {
+  return new List([element, ...list.ast]);
+};
+
+const concat = (...lists) => {
+  const concatedList = lists.reduce(
+    (firstList, secondList) => firstList.concat(secondList.ast),
+    []
+  );
+  return new List(concatedList);
+};
 
 const funcMappings = {
   '+': (...args) => args.reduce((a, b) => a + b, 0),
@@ -13,7 +25,12 @@ const funcMappings = {
   '>': (a, b) => a > b,
   '<=': (a, b) => a <= b,
   '>=': (a, b) => a >= b,
-  '=': (a, b) => a === b,
+  '=': (a, b) => {
+    if (a instanceof MalValue && b instanceof MalValue) {
+      return a.equals(b);
+    }
+    return a === b;
+  },
   count: (a) => a.length,
   'list?': (a) => a instanceof List,
   list: (...elements) => new List([...elements]),
@@ -34,8 +51,21 @@ const funcMappings = {
     return atom.set(func(atom.get(), ...args));
   },
   print: (str) => console.log(str),
-  str: (...strings) => new String(strings.map((e) => e.value).join('')),
+  str: (...strings) =>
+    new String(
+      strings
+        .map((e) => {
+          return e.value || e.symbol;
+        })
+        .join('')
+    ),
   slurp: (str) => new String(readFileSync(str.value).toString()),
+  cons: cons,
+  concat: concat,
+  vec: (list) => {
+    console.log(list);
+    return new Vector([...list.ast]);
+  },
 };
 
 const loadEnv = () => {

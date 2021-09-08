@@ -1,6 +1,8 @@
+const _ = require('lodash');
 class MalValue {
   constructor() {}
   prn_str(print_readably = false) {}
+  equals(other) {}
 }
 
 class List extends MalValue {
@@ -13,6 +15,15 @@ class List extends MalValue {
     return '(' + this.ast.map(prn_str).join(' ') + ')';
   }
 
+  beginsWith(symbol) {
+    return !this.isEmpty() && this.ast[0].symbol === symbol;
+  }
+
+  equals(other) {
+    if (!other instanceof List) return false;
+    return _.isEqual(this.ast, other.ast);
+  }
+
   isEmpty() {
     return this.ast.length == 0;
   }
@@ -22,6 +33,11 @@ class HashMap extends MalValue {
   constructor(hashMap) {
     super();
     this.hashMap = hashMap;
+  }
+
+  equals(other) {
+    if (!other instanceof HashMap) return false;
+    return _.isEqual(this.hashMap, other.hashMap);
   }
 
   prn_str(print_readably = false) {
@@ -49,6 +65,11 @@ class Vector extends MalValue {
     return '[' + this.ast.map(prn_str).join(' ') + ']';
   }
 
+  equals(other) {
+    if (!other instanceof Vector) return false;
+    return _.isEqual(this.ast, other.ast);
+  }
+
   isEmpty() {
     return this.ast.length == 0;
   }
@@ -58,6 +79,11 @@ class String extends MalValue {
   constructor(value) {
     super();
     this.value = value;
+  }
+
+  equals(other) {
+    if (!other instanceof String) return false;
+    return _.isEqual(this.value, other.value);
   }
 
   prn_str(print_readably = false) {
@@ -84,6 +110,11 @@ class Symbol extends MalValue {
   prn_str(print_readably = false) {
     return this.symbol;
   }
+
+  equals(other) {
+    if (!other instanceof Symbol) return false;
+    return _.isEqual(this.symbol, other.symbol);
+  }
 }
 
 class Keyword extends MalValue {
@@ -95,15 +126,26 @@ class Keyword extends MalValue {
   prn_str(print_readably = false) {
     return ':' + this.keyword;
   }
+
+  equals(other) {
+    if (!other instanceof Keyword) return false;
+    return _.isEqual(this.keyword, other.keyword);
+  }
 }
 
 class Fn extends MalValue {
-  constructor(ast, params, env, fn) {
+  constructor(ast, params, env, fn, isMacro = false) {
     super();
     this.ast = ast;
     this.params = params;
     this.env = env;
     this.fn = fn;
+    this.isMacro = isMacro;
+  }
+
+  equals(other) {
+    if (!other instanceof Fn) return false;
+    return _.isEqual(this.ast, other.ast);
   }
 
   prn_str(print_readably = false) {
@@ -119,6 +161,10 @@ class Atom extends MalValue {
   get() {
     return this.malValue;
   }
+  equals(other) {
+    if (!other instanceof Atom) return false;
+    return this.malValue.equals(other.malValue);
+  }
   set(malValue) {
     return (this.malValue = malValue);
   }
@@ -133,6 +179,9 @@ class NilValue extends MalValue {
   }
   prn_str(print_readably = false) {
     return 'nil';
+  }
+  equals(other) {
+    return other === Nil;
   }
 }
 
@@ -156,4 +205,5 @@ module.exports = {
   Keyword,
   Fn,
   Atom,
+  MalValue,
 };

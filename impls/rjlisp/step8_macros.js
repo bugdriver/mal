@@ -54,20 +54,6 @@ const quasiquote = (ast) => {
     }
     return result;
   }
-
-  if (ast instanceof Vector) {
-    let result = new List([]);
-    for (let i = ast.ast.length - 1; i >= 0; i--) {
-      const elt = ast.ast[i];
-      if (elt instanceof List && elt.beginsWith('splice-unquote')) {
-        result = new List([new Symbol('concat'), elt.ast[1], result]);
-      } else {
-        result = new List([new Symbol('cons'), quasiquote(elt), result]);
-      }
-    }
-    return new List([new Symbol('vec'), result]);
-  }
-
   if (ast instanceof HashMap || ast instanceof Symbol) {
     return new List([new Symbol('quote'), ast]);
   }
@@ -124,7 +110,6 @@ const EVAL = (ast, env) => {
     }
 
     if (firstElement.symbol === 'quote') {
-      console.log(ast.ast[1]);
       return ast.ast[1];
     }
 

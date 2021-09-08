@@ -123,7 +123,7 @@ const createQuotedList = (reader, token) => {
     '@': 'deref',
   };
   reader.next();
-  return new List([quotes[token], read_form(reader)]);
+  return new List([new Symbol(quotes[token]), read_form(reader)]);
 };
 
 const read_form = (reader) => {
